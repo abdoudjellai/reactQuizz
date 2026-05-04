@@ -1,70 +1,125 @@
-# Getting Started with Create React App
+# React Quiz App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A timed React quiz application built with modern React patterns:
+
+- `useReducer` for predictable state transitions
+- Context API for global quiz state
+- `json-server` as a lightweight local API
+
+This project includes two versions of the app:
+
+- `src/`: Context API version (final refactor)
+- `src-no-context/`: pre-context version for comparison
+
+## Features
+
+- Load quiz questions from a local API
+- Start, answer, and navigate through multiple-choice questions
+- Score tracking with per-question points
+- Live progress indicator
+- Countdown timer (`30s` per question)
+- Auto-finish when time runs out
+- High score persistence during the session
+- Restart flow after finishing
+
+## Tech Stack
+
+- React 18
+- Context API
+- `useReducer` + `useEffect`
+- `json-server`
+- Create React App
+
+## Getting Started
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Start the mock API server
+
+```bash
+npm run server
+```
+
+This runs `json-server` at:
+
+- `http://localhost:9000/questions`
+
+### 3. Start the React app
+
+In a second terminal:
+
+```bash
+npm start
+```
+
+Open `http://localhost:3000` in your browser.
 
 ## Available Scripts
 
-In the project directory, you can run:
+- `npm start`: Runs the app in development mode.
+- `npm run server`: Starts local mock API from `data/questions.json` on port `9000`.
+- `npm test`: Launches the test runner.
+- `npm run build`: Builds the app for production.
 
-### `npm start`
+## Project Structure
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```text
+.
+|- data/
+|  |- questions.json
+|- src/
+|  |- components/
+|  |- contexts/
+|  |  |- QuizContext.js
+|- src-no-context/
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## State Flow (Context Version)
 
-### `npm test`
+The quiz state is centralized in `QuizContext`:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Fetch lifecycle: `loading -> ready -> active -> finished`
+- Actions handled by reducer:
+  - `dataReceived`
+  - `dataFailed`
+  - `start`
+  - `newAnswer`
+  - `nextQuestion`
+  - `finish`
+  - `restart`
+  - `tick`
 
-### `npm run build`
+Core derived values:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- `numQuestions`
+- `maxPossiblePoints`
+- `secondsRemaining`
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Data Format
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Questions are stored in `data/questions.json` and follow this shape:
 
-### `npm run eject`
+```json
+{
+  "question": "Which hook to use for an API request on initial render?",
+  "options": ["useState", "useEffect", "useRef", "useReducer"],
+  "correctOption": 1,
+  "points": 10
+}
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Troubleshooting
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- If the quiz stays on loading:
+  - Ensure `npm run server` is running.
+  - Verify `http://localhost:9000/questions` is reachable.
+- If port `9000` is busy:
+  - Stop the conflicting process or change the server port and update the fetch URL in `src/contexts/QuizContext.js`.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Learning Goal
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This app demonstrates how to refactor from prop drilling to centralized state with Context API + reducer architecture while keeping UI components focused and reusable.
