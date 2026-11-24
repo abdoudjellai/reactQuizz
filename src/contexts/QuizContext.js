@@ -1,6 +1,6 @@
 
 import { createContext, useContext, useReducer, useEffect } from "react";
-import quizData from "../../data/questions.json";
+import quizData from "../questions.json";
 
 const QuizContext = createContext();
 
