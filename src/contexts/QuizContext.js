@@ -1,4 +1,6 @@
+
 import { createContext, useContext, useReducer, useEffect } from "react";
+import quizData from "../../data/questions.json";
 
 const QuizContext = createContext();
 
@@ -6,8 +8,6 @@ const SECS_PER_QUESTION = 30;
 
 const initialState = {
   questions: [],
-
-  // 'loading', 'error', 'ready', 'active', 'finished'
   status: "loading",
   index: 0,
   answer: null,
@@ -24,18 +24,18 @@ function reducer(state, action) {
         questions: action.payload,
         status: "ready",
       };
+
     case "dataFailed":
-      return {
-        ...state,
-        status: "error",
-      };
+      return { ...state, status: "error" };
+
     case "start":
       return {
         ...state,
         status: "active",
         secondsRemaining: state.questions.length * SECS_PER_QUESTION,
       };
-    case "newAnswer":
+
+    case "newAnswer": {
       const question = state.questions.at(state.index);
 
       return {
@@ -46,15 +46,18 @@ function reducer(state, action) {
             ? state.points + question.points
             : state.points,
       };
+    }
+
     case "nextQuestion":
       return { ...state, index: state.index + 1, answer: null };
+
     case "finish":
       return {
         ...state,
         status: "finished",
-        highscore:
-          state.points > state.highscore ? state.points : state.highscore,
+        highscore: Math.max(state.points, state.highscore),
       };
+
     case "restart":
       return { ...initialState, questions: state.questions, status: "ready" };
 
@@ -66,7 +69,7 @@ function reducer(state, action) {
       };
 
     default:
-      throw new Error("Action unkonwn");
+      throw new Error("Action unknown");
   }
 }
 
@@ -77,16 +80,17 @@ function QuizProvider({ children }) {
   ] = useReducer(reducer, initialState);
 
   const numQuestions = questions.length;
+
   const maxPossiblePoints = questions.reduce(
     (prev, cur) => prev + cur.points,
     0
   );
 
-  useEffect(function () {
-    fetch("https://react-quizz-sigma.vercel.app/questions")
-      .then((res) => res.json())
-      .then((data) => dispatch({ type: "dataReceived", payload: data }))
-      .catch((err) => dispatch({ type: "dataFailed" }));
+  useEffect(() => {
+    dispatch({
+      type: "dataReceived",
+      payload: quizData.questions,
+    });
   }, []);
 
   return (
@@ -101,7 +105,6 @@ function QuizProvider({ children }) {
         secondsRemaining,
         numQuestions,
         maxPossiblePoints,
-
         dispatch,
       }}
     >
@@ -112,8 +115,10 @@ function QuizProvider({ children }) {
 
 function useQuiz() {
   const context = useContext(QuizContext);
+
   if (context === undefined)
     throw new Error("QuizContext was used outside of the QuizProvider");
+
   return context;
 }
 
